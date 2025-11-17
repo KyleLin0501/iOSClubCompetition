@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025 創新應用競賽報名系統</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bs-primary: #4f46e5;
+            --bs-primary-rgb: 79, 70, 229;
+            --bs-btn-bg: #4f46e5;
+            --bs-btn-border-color: #4f46e5;
+            --bs-btn-hover-bg: #4338ca;
+        }
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: #f4f7f6;
+            color: #212529;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .hidden { display: none !important; }
+
+        /* 儀表板樣式 */
+        .form-group h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--bs-primary);
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .member-card { background-color: #f8f9fa; }
+        .dashboard-input:disabled { background-color: #e9ecef; opacity: 0.7; }
+        .btn .bi { vertical-align: middle; margin-top: -3px; margin-right: 4px; }
+
+        /* 字數統計樣式 */
+        .char-counter {
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            text-align: right;
+        }
+        .char-counter.text-danger { font-weight: bold; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <main class="container-xl my-5 flex-grow-1">
+
+        <section id="auth-section" class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                <div class="mb-4">
+                    <a href="/" class="text-decoration-none text-secondary d-inline-flex align-items-center">
+                        <i class="bi bi-arrow-left me-2"></i> 返回首頁
+                    </a>
+                </div>
+
+                <div class="card shadow-lg border-0">
+                    <div class="card-body p-4 p-md-5">
+                        <div class="text-center text-primary mb-4">
+                            <i class="bi bi-clipboard-check-fill" style="font-size: 3.5rem;"></i>
+                        </div>
+                        <h2 class="display-6 fw-bold text-center mb-4">報名系統登入</h2>
+                        <form id="login-form" class="gy-3">
+                            <div class="mb-3">
+                                <label for="login-email" class="form-label">帳號 (Email)</label>
+                                <input type="email" id="login-email" class="form-control form-control-lg" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="login-password" class="form-label">密碼</label>
+                                <input type="password" id="login-password" class="form-control form-control-lg" required>
+                            </div>
+                            <div id="login-error" class="form-text text-danger small hidden mb-3"></div>
+                            <button type="submit" id="login-button" class="btn btn-primary w-100 btn-lg fw-semibold mt-3">登入</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="dashboard-view" class="hidden">
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
+                <h1 class="display-5 fw-bold mb-0">競賽儀表板</h1>
+                <div class="d-flex gap-2">
+                    <button type="button" id="admin-back-btn" class="btn btn-outline-secondary hidden">
+                        <i class="bi bi-arrow-left"></i> 返回列表
+                    </button>
+                    <button type="button" id="logout-button" class="btn btn-secondary">
+                        <i class="bi bi-box-arrow-right"></i> 登出
+                    </button>
+                </div>
+            </div>
+
+            <div id="deadline-status" class="alert text-center fw-medium" role="alert"></div>
+
+            <div id="dashboard-loading" class="card shadow-sm border-0">
+                <div class="card-body p-5 text-center">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="fs-5 text-muted mt-3 mb-0">正在載入資料...</p>
+                </div>
+            </div>
+
+            <form id="dashboard-form" class="hidden">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body p-4 p-md-5">
+                        <div class="form-group">
+                            <h3>隊長資料</h3>
+                            <div class="row g-3">
+                                <div class="col-md-6 form-field">
+                                    <label class="form-label">隊長姓名（中文）</label>
+                                    <input type="text" id="captain-name-ch" class="form-control dashboard-input" required>
+                                </div>
+                                <div class="col-md-6 form-field">
+                                    <label class="form-label">隊長姓名（英文）</label>
+                                    <input type="text" id="captain-name-en" class="form-control dashboard-input" placeholder="Chun-Ming, Wang" required>
+                                </div>
+                                <div class="col-md-6 form-field">
+                                    <label class="form-label">隊長學號</label>
+                                    <input type="text" id="captain-student-id" class="form-control dashboard-input" required>
+                                </div>
+                                <div class="col-md-6 form-field">
+                                    <label class="form-label">隊長系級</label>
+                                    <input type="text" id="captain-dept" class="form-control dashboard-input" placeholder="資訊工程學系 四年級" required>
+                                </div>
+                                <div class="col-md-6 form-field">
+                                    <label class="form-label">隊長信箱 (帳號)</label>
+                                    <input type="email" id="captain-email" class="form-control dashboard-input" disabled>
+                                </div>
+                                <div class="col-md-6 form-field">
+                                    <label class="form-label">隊長 Line ID</label>
+                                    <input type="text" id="captain-line-id" class="form-control dashboard-input">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body p-4 p-md-5">
+                        <div class="form-group">
+                            <h3>隊員資料 (1-4 人)</h3>
+                            <div id="members-list" class="vstack gap-3 mb-4"></div>
+                            <button type="button" id="add-member-btn" class="btn btn-success">
+                                <i class="bi bi-plus-circle"></i> 新增隊員
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-6">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-body p-4 p-md-5">
+                                <div class="form-group">
+                                    <h3>指導老師</h3>
+                                    <div class="row g-3">
+                                        <div class="col-12 form-field">
+                                            <label class="form-label">指導老師姓名</label>
+                                            <input type="text" id="advisor-name" class="form-control dashboard-input" required>
+                                        </div>
+                                        <div class="col-12 form-field">
+                                            <label class="form-label">指導老師系所</label>
+                                            <input type="text" id="advisor-dept" class="form-control dashboard-input" placeholder="資訊工程學系" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-body p-4 p-md-5">
+                                <div class="form-group">
+                                    <h3>隊伍作品基本資料</h3>
+                                    <div class="row g-3">
+                                        <div class="col-12 form-field">
+                                            <label class="form-label">隊伍名稱</label>
+                                            <input type="text" id="team-name" class="form-control dashboard-input" required>
+                                        </div>
+                                        <div class="col-12 form-field">
+                                            <label class="form-label">作品名稱</label>
+                                            <input type="text" id="project-name" class="form-control dashboard-input" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-field mt-3">
+                                        <label class="form-label">作品概述 (50-100字)</label>
+                                        <textarea id="project-overview" rows="3" class="form-control dashboard-input" placeholder="描述您的作品..." required maxlength="100"></textarea>
+                                        <div id="overview-counter" class="char-counter text-muted">0 / 100</div>
+                                    </div>
+                                    <div class="form-field mt-3">
+                                        <label class="form-label">企劃書上傳 (限 PDF)</label>
+                                        <input type="file" id="project-proposal" class="form-control dashboard-input" accept=".pdf">
+                                        <div id="proposal-status" class="form-text text-muted mt-2"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" id="save-button" class="btn btn-primary w-100 btn-lg fw-semibold">
+                    <i class="bi bi-save"></i> 儲存所有資料
+                </button>
+            </form>
+        </section>
+
+        <section id="admin-dashboard-view" class="hidden">
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
+                <h1 class="display-5 fw-bold mb-0">超級管理員面板</h1>
+                <button type="button" id="admin-logout-button" class="btn btn-secondary">
+                    <i class="bi bi-box-arrow-right"></i> 登出
+                </button>
+            </div>
+
+            <div id="admin-loading" class="card shadow-sm border-0">
+                <div class="card-body p-5 text-center">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="fs-5 text-muted mt-3 mb-0">正在讀取資料...</p>
+                </div>
+            </div>
+
+            <div id="admin-data-view" class="hidden">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4 p-md-5">
+                        <h3>所有參賽隊伍</h3>
+                        <p class="text-muted" id="admin-team-count">總共 0 隊</p>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col">隊伍名稱</th>
+                                        <th scope="col">隊長姓名</th>
+                                        <th scope="col">隊長 Email</th>
+                                        <th scope="col">企劃書</th>
+                                        <th scope="col" class="text-end">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-table-body">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer id="page-footer" class="bg-dark text-white-50 py-4 mt-auto hidden">
+        <div class="container-xl text-center">
+            <p class="mb-0">&copy; 2025 創新應用競賽主辦單位. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="statusModalLabel">訊息</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="statusModalBody"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, collectionGroup, query, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCBi5ZPF5wFy7VS7rxUOjznrY5IMqab-R8",
+            authDomain: "iosclubcompetition.firebaseapp.com",
+            projectId: "iosclubcompetition",
+            storageBucket: "iosclubcompetition.firebasestorage.app",
+            messagingSenderId: "820341617058",
+            appId: "1:820341617058:web:4c8a9a78766ebb7a57c2fb",
+            measurementId: "G-17C2WZKGFC"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        const appId = firebaseConfig.projectId;
+        let currentUserId = null;
+        let currentTeamData = null;
+        let isDeadlinePassed = false;
+        const deadline = new Date('2025-12-08T00:00:00+08:00');
+
+        let editingUserId = null;
+        let isAdminMode = false;
+        let statusModal;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            statusModal = new bootstrap.Modal(document.getElementById('statusModal'));
+
+            const authSection = document.getElementById('auth-section');
+            const dashboardView = document.getElementById('dashboard-view');
+            const dashboardForm = document.getElementById('dashboard-form');
+            const adminDashboardView = document.getElementById('admin-dashboard-view');
+            // *** 修正：移除了 pageHeader 和 adminBadge 的宣告，因為 HTML 已刪除 ***
+            const pageFooter = document.getElementById('page-footer');
+
+            const loginForm = document.getElementById('login-form');
+            const loginButton = document.getElementById('login-button');
+            const overviewInput = document.getElementById('project-overview');
+            const overviewCounter = document.getElementById('overview-counter');
+
+            // 1. 驗證邏輯
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUserId = user.uid;
+                    if (user.email === "admin@gmail.com") {
+                        console.log("Admin logged in");
+                        isAdminMode = true;
+                        authSection.classList.add('hidden');
+                        // *** 修正：移除 Header 操作 ***
+                        adminDashboardView.classList.remove('hidden');
+                        dashboardView.classList.add('hidden');
+                        pageFooter.classList.remove('hidden');
+                        loadAdminDashboard();
+                    } else {
+                        console.log("User logged in");
+                        isAdminMode = false;
+                        authSection.classList.add('hidden');
+                        // *** 修正：移除 Header 操作 ***
+                        dashboardView.classList.remove('hidden');
+                        adminDashboardView.classList.add('hidden');
+                        pageFooter.classList.remove('hidden');
+                        document.getElementById('admin-back-btn').classList.add('hidden');
+                        loadDashboard(currentUserId);
+                    }
+                } else {
+                    currentUserId = null;
+                    isAdminMode = false;
+                    editingUserId = null;
+                    authSection.classList.remove('hidden');
+                    dashboardView.classList.add('hidden');
+                    adminDashboardView.classList.add('hidden');
+                    // *** 修正：移除 Header 操作 ***
+                    pageFooter.classList.remove('hidden');
+                }
+            });
+
+            // 2. 字數限制
+            overviewInput.addEventListener('input', function() {
+                const currentLength = this.value.length;
+                overviewCounter.textContent = `${currentLength} / 100`;
+                if (currentLength < 50) {
+                    overviewCounter.classList.add('text-danger');
+                    overviewCounter.textContent += " (字數不足)";
+                } else if (currentLength >= 100) {
+                    overviewCounter.classList.add('text-danger');
+                    overviewCounter.textContent += " (已達上限)";
+                } else {
+                    overviewCounter.classList.remove('text-danger');
+                }
+            });
+
+            // 3. Admin 邏輯
+            async function loadAdminDashboard() {
+                const adminLoading = document.getElementById('admin-loading');
+                const adminDataView = document.getElementById('admin-data-view');
+                const adminTableBody = document.getElementById('admin-table-body');
+                const adminTeamCount = document.getElementById('admin-team-count');
+
+                adminLoading.classList.remove('hidden');
+                adminDataView.classList.add('hidden');
+                adminTableBody.innerHTML = '';
+
+                try {
+                    const q = query(collectionGroup(db, 'teamData'));
+                    const querySnapshot = await getDocs(q);
+                    let teamCount = 0;
+
+                    querySnapshot.forEach((docSnapshot) => {
+                        if (docSnapshot.exists()) {
+                            teamCount++;
+                            const data = docSnapshot.data();
+                            const targetUid = docSnapshot.ref.parent.parent.id;
+
+                            // 處理企劃書按鈕
+                            let proposalBtn = '<span class="badge bg-light text-secondary border">未上傳</span>';
+                            if (data.proposalURL) {
+                                proposalBtn = `
+                                    <a href="${data.proposalURL}" target="_blank" class="btn btn-sm btn-outline-danger" title="${data.proposalFileName || '企劃書'}">
+                                        <i class="bi bi-file-earmark-pdf-fill"></i> 開啟
+                                    </a>
+                                `;
+                            }
+
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${data.teamName || '未命名'}</td>
+                                <td>${data.captainNameCH || 'N/A'}</td>
+                                <td>${data.captainEmail || 'N/A'}</td>
+                                <td>${proposalBtn}</td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary view-detail-btn" data-uid="${targetUid}">
+                                        <i class="bi bi-pencil-square"></i> 詳細/編輯
+                                    </button>
+                                </td>
+                            `;
+                            adminTableBody.appendChild(row);
+                        }
+                    });
+                    adminTeamCount.textContent = `總共 ${teamCount} 隊`;
+
+                    document.querySelectorAll('.view-detail-btn').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            const uid = e.target.closest('button').dataset.uid;
+                            enterAdminEditMode(uid);
+                        });
+                    });
+
+                } catch (error) {
+                    console.error("Admin Load Error", error);
+                    showModal("讀取失敗", "無法讀取隊伍列表，請檢查權限。", "danger");
+                } finally {
+                    adminLoading.classList.add('hidden');
+                    adminDataView.classList.remove('hidden');
+                }
+            }
+
+            function enterAdminEditMode(targetUid) {
+                editingUserId = targetUid;
+                adminDashboardView.classList.add('hidden');
+                dashboardView.classList.remove('hidden');
+
+                const backBtn = document.getElementById('admin-back-btn');
+                backBtn.classList.remove('hidden');
+                backBtn.onclick = () => {
+                    dashboardView.classList.add('hidden');
+                    adminDashboardView.classList.remove('hidden');
+                    editingUserId = null;
+                    loadAdminDashboard();
+                };
+                loadDashboard(targetUid);
+            }
+
+            // 4. Dashboard & Form 邏輯
+            async function loadDashboard(targetUid) {
+                const loading = document.getElementById('dashboard-loading');
+                const form = document.getElementById('dashboard-form');
+
+                loading.classList.remove('hidden');
+                form.classList.add('hidden');
+
+                const docRef = doc(db, 'artifacts', appId, 'users', targetUid, 'teamData', 'profile');
+
+                try {
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        currentTeamData = docSnap.data();
+                        populateForm(currentTeamData, targetUid);
+                    } else {
+                        currentTeamData = null;
+                        populateForm(null, targetUid);
+                    }
+                } catch (error) {
+                    console.error("Load Error", error);
+                    showModal("錯誤", "無法載入資料。", "danger");
+                } finally {
+                    loading.classList.add('hidden');
+                    form.classList.remove('hidden');
+
+                    if (!isAdminMode) {
+                        checkDeadlineAndLockForm();
+                    } else {
+                        toggleFormReadonly(false);
+                        document.getElementById('deadline-status').textContent = "管理員編輯模式：無時間限制";
+                        document.getElementById('deadline-status').className = "alert alert-warning text-center fw-medium";
+                    }
+                }
+            }
+
+            function populateForm(data, targetUid) {
+                document.getElementById('captain-name-ch').value = data?.captainNameCH || '';
+                document.getElementById('captain-name-en').value = data?.captainNameEN || '';
+                document.getElementById('captain-student-id').value = data?.captainStudentID || '';
+                document.getElementById('captain-dept').value = data?.captainDept || '';
+                document.getElementById('captain-line-id').value = data?.captainLineID || '';
+                document.getElementById('captain-email').value = data?.captainEmail || (isAdminMode ? "Loading..." : auth.currentUser.email);
+                document.getElementById('advisor-name').value = data?.advisorName || '';
+                document.getElementById('advisor-dept').value = data?.advisorDept || '';
+                document.getElementById('team-name').value = data?.teamName || '';
+                document.getElementById('project-name').value = data?.projectName || '';
+                document.getElementById('project-overview').value = data?.projectOverview || '';
+
+                overviewInput.dispatchEvent(new Event('input'));
+
+                const pStatus = document.getElementById('proposal-status');
+                document.getElementById('project-proposal').value = '';
+                if (data?.proposalFileName) {
+                    pStatus.innerHTML = `目前檔案: <a href="${data.proposalURL}" target="_blank" class="text-primary">${data.proposalFileName}</a>`;
+                } else {
+                    pStatus.textContent = '尚未上傳企劃書。';
+                }
+
+                const membersList = document.getElementById('members-list');
+                membersList.innerHTML = '';
+                if (data?.members) {
+                    data.members.forEach(m => addMemberToUI(m));
+                }
+                updateAddMemberButtonState();
+            }
+
+            function addMemberToUI(memberData) {
+                const membersList = document.getElementById('members-list');
+                const memberId = `member-${Date.now()}`;
+                const card = document.createElement('div');
+                card.className = 'member-card card border p-3 position-relative';
+                card.setAttribute('data-member-id', memberId);
+
+                const disabledAttr = (!isAdminMode && isDeadlinePassed) ? 'disabled' : '';
+                const btnDisplay = (!isAdminMode && isDeadlinePassed) ? 'none' : 'block';
+
+                card.innerHTML = `
+                    <button type="button" class="btn-close remove-member-btn" data-id="${memberId}" style="display:${btnDisplay}; position:absolute; top:1rem; right:1rem;"></button>
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="small">姓名(中)</label><input type="text" class="form-control dashboard-input member-name-ch" value="${memberData?.nameCH||''}" ${disabledAttr}></div>
+                        <div class="col-md-6"><label class="small">姓名(英)</label><input type="text" class="form-control dashboard-input member-name-en" value="${memberData?.nameEN||''}" ${disabledAttr}></div>
+                        <div class="col-md-6"><label class="small">學號</label><input type="text" class="form-control dashboard-input member-student-id" value="${memberData?.studentID||''}" ${disabledAttr}></div>
+                        <div class="col-md-6"><label class="small">系級</label><input type="text" class="form-control dashboard-input member-dept" value="${memberData?.dept||''}" ${disabledAttr}></div>
+                        <div class="col-12"><label class="small">信箱</label><input type="email" class="form-control dashboard-input member-email" value="${memberData?.email||''}" ${disabledAttr}></div>
+                    </div>
+                `;
+                membersList.appendChild(card);
+            }
+
+            document.getElementById('members-list').addEventListener('click', (e) => {
+                if (!isAdminMode && isDeadlinePassed) return;
+                if (e.target.classList.contains('remove-member-btn')) {
+                    e.target.closest('.member-card').remove();
+                    updateAddMemberButtonState();
+                }
+            });
+
+            document.getElementById('add-member-btn').addEventListener('click', () => {
+                const list = document.getElementById('members-list');
+                if (list.childElementCount < 3) {
+                    addMemberToUI(null);
+                    updateAddMemberButtonState();
+                }
+            });
+
+            function updateAddMemberButtonState() {
+                const btn = document.getElementById('add-member-btn');
+                if (!isAdminMode && isDeadlinePassed) { btn.style.display = 'none'; return; }
+
+                const count = document.getElementById('members-list').childElementCount;
+                if (count >= 3) {
+                    btn.disabled = true;
+                    btn.innerText = '已達上限 (4人)';
+                    btn.classList.replace('btn-success', 'btn-secondary');
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-plus-circle"></i> 新增隊員';
+                    btn.classList.replace('btn-secondary', 'btn-success');
+                }
+            }
+
+            // 5. 儲存邏輯
+            dashboardForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const overviewText = overviewInput.value;
+                if (overviewText.length < 50) {
+                    showModal("資料格式錯誤", "作品概述不能少於 50 字。", "warning");
+                    return;
+                }
+
+                const targetUid = isAdminMode ? editingUserId : currentUserId;
+                if (!targetUid) return;
+
+                const saveBtn = document.getElementById('save-button');
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> 儲存中...';
+
+                try {
+                    const members = [];
+                    document.querySelectorAll('.member-card').forEach(card => {
+                        members.push({
+                            nameCH: card.querySelector('.member-name-ch').value,
+                            nameEN: card.querySelector('.member-name-en').value,
+                            studentID: card.querySelector('.member-student-id').value,
+                            dept: card.querySelector('.member-dept').value,
+                            email: card.querySelector('.member-email').value,
+                        });
+                    });
+
+                    const dataToSave = {
+                        captainNameCH: document.getElementById('captain-name-ch').value,
+                        captainNameEN: document.getElementById('captain-name-en').value,
+                        captainStudentID: document.getElementById('captain-student-id').value,
+                        captainDept: document.getElementById('captain-dept').value,
+                        captainEmail: document.getElementById('captain-email').value,
+                        captainLineID: document.getElementById('captain-line-id').value,
+                        advisorName: document.getElementById('advisor-name').value,
+                        advisorDept: document.getElementById('advisor-dept').value,
+                        teamName: document.getElementById('team-name').value,
+                        projectName: document.getElementById('project-name').value,
+                        projectOverview: overviewText,
+                        members: members,
+                        proposalURL: currentTeamData?.proposalURL || '',
+                        proposalFileName: currentTeamData?.proposalFileName || '',
+                    };
+
+                    const fileInput = document.getElementById('project-proposal');
+                    const file = fileInput.files[0];
+                    if (file) {
+                        const storageRef = ref(storage, `artifacts/${appId}/users/${targetUid}/proposals/${file.name}`);
+                        const snap = await uploadBytes(storageRef, file);
+                        const url = await getDownloadURL(snap.ref);
+                        dataToSave.proposalURL = url;
+                        dataToSave.proposalFileName = file.name;
+                    }
+
+                    const docRef = doc(db, 'artifacts', appId, 'users', targetUid, 'teamData', 'profile');
+                    await setDoc(docRef, dataToSave);
+
+                    currentTeamData = dataToSave;
+                    populateForm(currentTeamData, targetUid);
+                    showModal("成功", "資料已成功儲存！", "success");
+
+                } catch (error) {
+                    console.error("Save Error", error);
+                    showModal("儲存失敗", "請檢查網路或權限設定。", "danger");
+                } finally {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = '<i class="bi bi-save"></i> 儲存所有資料';
+                }
+            });
+
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                const pwd = document.getElementById('login-password').value;
+                const err = document.getElementById('login-error');
+
+                loginButton.disabled = true;
+                err.classList.add('hidden');
+
+                try {
+                    await signInWithEmailAndPassword(auth, email, pwd);
+                } catch (error) {
+                    err.textContent = "帳號或密碼錯誤";
+                    err.classList.remove('hidden');
+                    loginButton.disabled = false;
+                }
+            });
+
+            const handleLogout = async () => { await signOut(auth); };
+            document.getElementById('logout-button').addEventListener('click', handleLogout);
+            document.getElementById('admin-logout-button').addEventListener('click', handleLogout);
+
+            function checkDeadlineAndLockForm() {
+                const now = new Date();
+                isDeadlinePassed = now > deadline;
+                const statusDiv = document.getElementById('deadline-status');
+                statusDiv.className = 'alert text-center fw-medium';
+                if (isDeadlinePassed) {
+                    statusDiv.textContent = `報名已截止 (2025/12/08)。僅供檢視。`;
+                    statusDiv.classList.add('alert-warning');
+                    toggleFormReadonly(true);
+                } else {
+                    statusDiv.textContent = '報名開放中。截止：2025/12/08 00:00';
+                    statusDiv.classList.add('alert-success');
+                    toggleFormReadonly(false);
+                }
+            }
+
+            function toggleFormReadonly(locked) {
+                dashboardForm.querySelectorAll('input, textarea').forEach(el => {
+                    if(el.id !== 'captain-email') el.disabled = locked;
+                });
+                document.getElementById('add-member-btn').style.display = locked ? 'none' : 'inline-flex';
+                document.getElementById('save-button').style.display = locked ? 'none' : 'block';
+                document.querySelectorAll('.remove-member-btn').forEach(b => b.style.display = locked ? 'none' : 'block');
+            }
+
+            function showModal(title, message, type) {
+                const modalBody = document.getElementById('statusModalBody');
+                const modalTitle = document.getElementById('statusModalLabel');
+                const header = document.querySelector('.modal-header');
+
+                modalTitle.textContent = title;
+                modalBody.textContent = message;
+
+                header.className = 'modal-header text-white';
+                if (type === 'success') header.classList.add('bg-success');
+                else if (type === 'danger') header.classList.add('bg-danger');
+                else if (type === 'warning') header.classList.add('bg-warning', 'text-dark');
+                else header.classList.add('bg-primary');
+
+                if(type === 'warning') header.classList.remove('text-white');
+
+                statusModal.show();
+            }
+        });
+    </script>
+</body>
+</html>

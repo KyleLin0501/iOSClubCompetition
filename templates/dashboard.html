@@ -1,0 +1,782 @@
+{#<!DOCTYPE html>#}
+{#<html lang="zh-Hant">#}
+{#<head>#}
+{#    <meta charset="UTF-Tf-8">#}
+{#    <meta name="viewport" content="width=device-width, initial-scale=1.0">#}
+{#    <title>報名儀表板 - 2025 創新應用競賽</title>#}
+{#    <!-- 載入 Tailwind CSS -->#}
+{#    <script src="https://cdn.tailwindcss.com"></script>#}
+{#    <!-- 載入 Google Font (Inter) -->#}
+{#    <link rel="preconnect" href="https://fonts.googleapis.com">#}
+{#    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>#}
+{#    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">#}
+{#    <style>#}
+{#        /* 基礎樣式 */#}
+{#        body {#}
+{#            font-family: 'Inter', 'Noto Sans TC', sans-serif;#}
+{#            background-color: #111827; /* 深灰背景 (bg-gray-900) */#}
+{#            color: #f9fafb; /* 淺色文字 */#}
+{#        }#}
+{##}
+{#        /* 隱藏/顯示的 CSS */#}
+{#        .hidden {#}
+{#            display: none;#}
+{#        }#}
+{##}
+{#        /* "高級感" 的輸入框 (報名系統專用) */#}
+{#        .form-input {#}
+{#            @apply w-full px-4 py-3 bg-gray-800 border border-gray-600 placeholder-gray-400 text-white rounded-lg shadow-sm transition duration-200;#}
+{#            @apply focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500;#}
+{#        }#}
+{##}
+{#        /* 按鈕樣式 */#}
+{#        .btn {#}
+{#            @apply px-6 py-3 rounded-lg font-semibold shadow-md transition duration-200 ease-in-out;#}
+{#            @apply focus:outline-none focus:ring-2 focus:ring-offset-2;#}
+{#        }#}
+{#        .btn-primary {#}
+{#            @apply bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500;#}
+{#        }#}
+{#        .btn-secondary {#}
+{#            @apply bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-400;#}
+{#        }#}
+{#        .btn-danger {#}
+{#            @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;#}
+{#        }#}
+{##}
+{#        /* 標籤頁樣式 */#}
+{#        .tab {#}
+{#            @apply px-4 py-3 font-medium text-gray-500 border-b-2 border-transparent cursor-pointer transition;#}
+{#            @apply hover:text-indigo-300 hover:border-indigo-300;#}
+{#        }#}
+{#        .tab-active {#}
+{#            @apply text-indigo-400 border-indigo-400;#}
+{#        }#}
+{##}
+{#        /* 區塊卡片 */#}
+{#        .content-card {#}
+{#            @apply bg-white/10 backdrop-blur-md p-8 md:p-12 rounded-xl;#}
+{#        }#}
+{#    </style>#}
+{#</head>#}
+{#<body class="antialiased">#}
+{##}
+{#    <!-- 全頁載入中提示 (預設顯示，驗證後隱藏) -->#}
+{#    <div id="page-loading" class="flex items-center justify-center min-h-screen">#}
+{#        <p>正在驗證身分...</p>#}
+{#    </div>#}
+{##}
+{#    <!-- 報名系統主畫面 (驗證後顯示) -->#}
+{#    <main id="app-view" class="hidden min-h-screen py-16 md:py-24">#}
+{#        <section id="registration" class="text-white">#}
+{#            <div class="container mx-auto px-4 md:px-6">#}
+{##}
+{#                <div class="max-w-3xl mx-auto">#}
+{#                    <!-- 報名系統主畫面 -->#}
+{#                    <div>#}
+{#                        <div class="flex justify-between items-center mb-6">#}
+{#                            <div class="text-lg">#}
+{#                                歡迎, <span id="user-email" class="font-semibold"></span>#}
+{#                            </div>#}
+{#                            <button id="logout-btn" class="text-sm text-gray-400 hover:text-white underline">登出</button>#}
+{#                        </div>#}
+{##}
+{#                        <!-- 系統鎖定提示 -->#}
+{#                        <div id="deadline-passed-notice" class="hidden p-4 mb-6 bg-yellow-900/50 border border-yellow-700 text-yellow-300 rounded-lg">#}
+{#                            報名已截止。系統目前為唯讀狀態，您無法修改任何資料。#}
+{#                        </div>#}
+{##}
+{#                        <!-- 載入中提示 -->#}
+{#                        <div id="loading-indicator" class="text-center p-10">#}
+{#                            <p>資料載入中...</p>#}
+{#                        </div>#}
+{##}
+{#                        <!-- 報名表單 (載入後顯示) -->#}
+{#                        <div id="registration-form" class="hidden">#}
+{#                            <!-- 標籤頁 -->#}
+{#                            <div class="border-b border-gray-700 mb-8">#}
+{#                                <nav class="flex space-x-4">#}
+{#                                    <button class="tab tab-active" data-tab="team-info">1. 隊伍成員基本資料</button>#}
+{#                                    <button class="tab" data-tab="project-info">2. 隊伍作品基本資料</button>#}
+{#                                </nav>#}
+{#                            </div>#}
+{##}
+{#                            <!-- 內容區域 -->#}
+{#                            <div id="tab-content">#}
+{#                                <!-- 1. 隊伍成員基本資料 -->#}
+{#                                <div id="team-info-tab">#}
+{#                                    <form id="team-form" class="space-y-8">#}
+{#                                        <!-- 隊長資料 -->#}
+{#                                        <div class="content-card bg-white/10 space-y-6">#}
+{#                                            <h4 class="text-xl font-semibold border-b border-gray-700 pb-3">隊長資料 (必填)</h4>#}
+{#                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">#}
+{#                                                <input type="text" id="captain-name-cn" class="form-input" placeholder="隊長姓名 (中文)" required>#}
+{#                                                <input type="text" id="captain-name-en" class="form-input" placeholder="隊長姓名 (英文)" required>#}
+{#                                                <input type="text" id="captain-student-id" class="form-input" placeholder="隊長學號" required>#}
+{#                                                <input type="text" id="captain-department" class="form-input" placeholder="隊長系級 (例: 資管三甲)" required>#}
+{#                                                <input type="email" id="captain-email" class="form-input" placeholder="隊長信箱 (將做為主要聯絡信箱)" required>#}
+{#                                                <input type="text" id="captain-line-id" class="form-input" placeholder="隊長Line ID" required>#}
+{#                                            </div>#}
+{#                                        </div>#}
+{##}
+{#                                        <!-- 指導老師 -->#}
+{#                                        <div class="content-card bg-white/10 space-y-6">#}
+{#                                            <h4 class="text-xl font-semibold border-b border-gray-700 pb-3">指導老師資料 (必填)</h4>#}
+{#                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">#}
+{#                                                <input type="text" id="advisor-department" class="form-input" placeholder="指導老師系所" required>#}
+{#                                                <input type="text" id="advisor-name" class="form-input" placeholder="指導老師姓名" required>#}
+{#                                            </div>#}
+{#                                        </div>#}
+{##}
+{#                                        <!-- 隊員資料 -->#}
+{#                                        <div class="content-card bg-white/10 space-y-6">#}
+{#                                            <div class="flex justify-between items-center border-b border-gray-700 pb-3">#}
+{#                                                <h4 class="text-xl font-semibold">隊員資料 (選填, 隊伍含隊長至多 4 人)</h4>#}
+{#                                                <button type="button" id="add-member-btn" class="btn btn-secondary !px-4 !py-2 text-sm">#}
+{#                                                    + 新增隊員#}
+{#                                                </button>#}
+{#                                            </div>#}
+{#                                            <div id="members-container" class="space-y-6">#}
+{#                                                <!-- 隊員模板 (JS 會複製這個) -->#}
+{#                                            </div>#}
+{#                                            <p id="member-count-error" class="text-red-400 text-sm hidden">隊伍人數已達上限 (4人)。</p>#}
+{#                                        </div>#}
+{##}
+{#                                        <button type="submit" id="save-team-btn" class="btn btn-primary w-full text-lg">#}
+{#                                            儲存本頁資料#}
+{#                                        </button>#}
+{#                                    </form>#}
+{#                                </div>#}
+{##}
+{#                                <!-- 2. 隊伍作品基本資料 -->#}
+{#                                <div id="project-info-tab" class="hidden">#}
+{#                                    <form id="project-form" class="space-y-8">#}
+{#                                        <div class="content-card bg-white/10 space-y-6">#}
+{#                                            <h4 class="text-xl font-semibold border-b border-gray-700 pb-3">作品資料</h4>#}
+{#                                            <input type="text" id="team-name" class="form-input" placeholder="隊伍名稱" required>#}
+{#                                            <input type="text" id="project-name" class="form-input" placeholder="作品名稱" required>#}
+{#                                            <div>#}
+{#                                                <label for="project-desc" class="block text-sm font-medium mb-2">作品概述 (50-100字)</label>#}
+{#                                                <textarea id="project-desc" rows="4" class="form-input" placeholder="請在此輸入 50 至 100 字的作品概述..." required minlength="50" maxlength="100"></textarea>#}
+{#                                                <div id="desc-char-count" class="text-sm text-gray-400 text-right mt-1">0 / 100</div>#}
+{#                                            </div>#}
+{#                                        </div>#}
+{##}
+{#                                        <div class="content-card bg-white/10 space-y-6">#}
+{#                                            <h4 class="text-xl font-semibold border-b border-gray-700 pb-3">企劃書上傳 (限 PDF)</h4>#}
+{#                                            <input type="file" id="proposal-file" class="form-input file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200" accept=".pdf" required>#}
+{##}
+{#                                            <!-- 上傳進度 -->#}
+{#                                            <div id="upload-progress-container" class="hidden w-full bg-gray-600 rounded-full h-2.5">#}
+{#                                                <div id="upload-progress-bar" class="bg-green-500 h-2.5 rounded-full" style="width: 0%"></div>#}
+{#                                            </div>#}
+{#                                            <div id="upload-status" class="text-sm text-green-400"></div>#}
+{#                                            <div id="current-file" class="text-sm">#}
+{#                                                目前已上傳檔案: <a href="#" id="current-file-link" class="text-indigo-400 underline" target="_blank">尚未上傳</a>#}
+{#                                            </div>#}
+{#                                        </div>#}
+{##}
+{#                                        <button type="submit" id="save-project-btn" class="btn btn-primary w-full text-lg">#}
+{#                                            儲存本頁資料#}
+{#                                        </button>#}
+{#                                    </form>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </div>#}
+{##}
+{#                </div>#}
+{#            </div>#}
+{#        </section>#}
+{#    </main>#}
+{##}
+{#    <!-- 隊員模板 (HTML) -->#}
+{#    <template id="member-template">#}
+{#        <div class="member-card p-6 border border-gray-700 rounded-lg space-y-4 relative">#}
+{#            <button type="button" class="delete-member-btn absolute top-4 right-4 text-gray-500 hover:text-red-400 transition">#}
+{#                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">#}
+{#                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />#}
+{#                </svg>#}
+{#            </button>#}
+{#            <h5 class="font-semibold text-lg">隊員</h5>#}
+{#            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">#}
+{#                <input type="text" class="form-input member-name-cn" placeholder="隊員姓名 (中文)" required>#}
+{#                <input type="text" class="form-input member-name-en" placeholder="隊員姓名 (英文)" required>#}
+{#                <input type="text" class="form-input member-student-id" placeholder="隊員學號" required>#}
+{#                <input type="text" class="form-input member-department" placeholder="隊員系級" required>#}
+{#                <input type="email" class="form-input member-email" placeholder="隊員信箱" required>#}
+{#            </div>#}
+{#        </div>#}
+{#    </template>#}
+{##}
+{#    <!-- 彈出視窗：未儲存警告 -->#}
+{#    <div id="unsaved-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center hidden">#}
+{#        <div class="bg-white rounded-lg shadow-xl p-8 max-w-md text-gray-900">#}
+{#            <h3 class="text-2xl font-bold mb-4">尚未儲存變更</h3>#}
+{#            <p class="text-gray-700 mb-6">#}
+{#                您在目前頁面有尚未儲存的資料。如果您切換分頁，這些資料將會遺失。#}
+{#            </p>#}
+{#            <div class="flex justify-end space-x-4">#}
+{#                <button id="cancel-switch-tab" class="btn btn-secondary">取消</button>#}
+{#                <button id="confirm-switch-tab" class="btn btn-danger">#}
+{#                    放棄變更並切換#}
+{#                </button>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+{##}
+{#    <!-- 全域 Toast 提示 -->#}
+{#    <div id="toast" class="hidden fixed bottom-10 right-10 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg transition-opacity duration-300">#}
+{#        資料已儲存！#}
+{#    </div>#}
+{##}
+{##}
+{#    <!-- Firebase SDKs -->#}
+{#    <script type="module">#}
+{#        // 載入 Firebase 模組#}
+{#        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";#}
+{#        import {#}
+{#            getAuth,#}
+{#            onAuthStateChanged,#}
+{#            signOut,#}
+{#            setLogLevel#}
+{#        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";#}
+{#        import {#}
+{#            getFirestore,#}
+{#            doc,#}
+{#            getDoc,#}
+{#            setDoc,#}
+{#            setLogLevel as setFirestoreLogLevel#}
+{#        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";#}
+{#        import {#}
+{#            getStorage,#}
+{#            ref,#}
+{#            uploadBytesResumable,#}
+{#            getDownloadURL#}
+{#        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";#}
+{##}
+{#        // *** 1. Firebase 設定 ***#}
+{#        // 這裡也需要貼上您在 registration.html 中使用的 *相同* 的 Firebase Config#}
+{#        const firebaseConfig = {#}
+{#            apiKey: "AIzaSyCBi5ZPF5wFy7VS7rxUOjznrY5IMqab-R8",#}
+{#            authDomain: "iosclubcompetition.firebaseapp.com",#}
+{#            projectId: "iosclubcompetition",#}
+{#            storageBucket: "iosclubcompetition.firebasestorage.app",#}
+{#            messagingSenderId: "820341617058",#}
+{#            appId: "1:820341617058:web:4c8a9a78766ebb7a57c2fb",#}
+{#            measurementId: "G-17C2WZKGFC"#}
+{#        };#}
+{##}
+{#        // 檢查 Config 是否已填寫#}
+{#        if (firebaseConfig.apiKey === "YOUR_API_KEY") {#}
+{#            console.error("請在 dashboard.html 中填入您的 Firebase 設定 (firebaseConfig)");#}
+{#            alert("Firebase 尚未設定！將跳轉回登入頁。");#}
+{#            window.location.href = '/registration/'; // 跳轉回登入頁#}
+{#        }#}
+{##}
+{#        // 初始化 Firebase#}
+{#        const app = initializeApp(firebaseConfig);#}
+{#        const auth = getAuth(app);#}
+{#        const db = getFirestore(app);#}
+{#        const storage = getStorage(app);#}
+{##}
+{#        // 開啟 Firebase 詳細日誌 (方便除錯)#}
+{#        setLogLevel('debug');#}
+{#        setFirestoreLogLevel('debug');#}
+{##}
+{#        // *** 2. 全域變數與常數 ***#}
+{#        const DEADLINE = new Date('2025-12-08T00:00:00+08:00'); // 台灣時間#}
+{#        let currentUserId = null;#}
+{#        let isDeadlinePassed = new Date() > DEADLINE;#}
+{#        let isDirty = false; // 追蹤是否有未儲存的變更#}
+{#        let currentOpenTab = 'team-info'; // 目前開啟的標籤頁#}
+{##}
+{#        // Firebase Firestore 路徑所需的 App ID#}
+{#        const appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.projectId; // fallback to projectId if __app_id is not set#}
+{##}
+{#        // *** 3. DOM 元素快取 ***#}
+{#        const $ = document.getElementById.bind(document);#}
+{#        const pageLoading = $('page-loading');#}
+{#        const appView = $('app-view');#}
+{#        const logoutBtn = $('logout-btn');#}
+{#        const userEmail = $('user-email');#}
+{#        const deadlineNotice = $('deadline-passed-notice');#}
+{#        const loadingIndicator = $('loading-indicator');#}
+{#        const registrationForm = $('registration-form');#}
+{##}
+{#        // 標籤頁#}
+{#        const tabs = document.querySelectorAll('.tab');#}
+{#        const teamInfoTab = $('team-info-tab');#}
+{#        const projectInfoTab = $('project-info-tab');#}
+{##}
+{#        // 表單#}
+{#        const teamForm = $('team-form');#}
+{#        const projectForm = $('project-form');#}
+{##}
+{#        // 隊伍表單欄位#}
+{#        const addMemberBtn = $('add-member-btn');#}
+{#        const membersContainer = $('members-container');#}
+{#        const memberTemplate = $('member-template');#}
+{#        const memberCountError = $('member-count-error');#}
+{##}
+{#        // 作品表單欄位#}
+{#        const projectDesc = $('project-desc');#}
+{#        const descCharCount = $('desc-char-count');#}
+{#        const proposalFile = $('proposal-file');#}
+{#        const uploadProgressContainer = $('upload-progress-container');#}
+{#        const uploadProgressBar = $('upload-progress-bar');#}
+{#        const uploadStatus = $('upload-status');#}
+{#        const currentFileLink = $('current-file-link');#}
+{##}
+{#        // 彈出視窗#}
+{#        const unsavedModal = $('unsaved-modal');#}
+{#        const cancelSwitchTab = $('cancel-switch-tab');#}
+{#        const confirmSwitchTab = $('confirm-switch-tab');#}
+{##}
+{#        // Toast#}
+{#        const toast = $('toast');#}
+{##}
+{#        // *** 4. 核心功能 ***#}
+{##}
+{#        // 檢查截止日期#}
+{#        function checkDeadline() {#}
+{#            if (isDeadlinePassed) {#}
+{#                deadlineNotice.classList.remove('hidden');#}
+{#                // 禁用所有表單元素#}
+{#                document.querySelectorAll('input, textarea, button, select').forEach(el => {#}
+{#                    if (el.id !== 'logout-btn' && !el.classList.contains('tab')) {#}
+{#                        el.disabled = true;#}
+{#                    }#}
+{#                });#}
+{#                addMemberBtn.disabled = true;#}
+{#            }#}
+{#        }#}
+{##}
+{#        // 顯示 Toast 提示#}
+{#        function showToast(message, type = 'success') {#}
+{#            toast.textContent = message;#}
+{#            toast.classList.remove('hidden', 'bg-green-600', 'bg-red-600');#}
+{#            if (type === 'success') {#}
+{#                toast.classList.add('bg-green-600');#}
+{#            } else {#}
+{#                toast.classList.add('bg-red-600');#}
+{#            }#}
+{#            toast.classList.remove('opacity-0');#}
+{##}
+{#            setTimeout(() => {#}
+{#                toast.classList.add('opacity-0');#}
+{#                setTimeout(() => toast.classList.add('hidden'), 300);#}
+{#            }, 3000);#}
+{#        }#}
+{##}
+{#        // 標記為"髒" (有未儲存的變更)#}
+{#        function markAsDirty() {#}
+{#            if (isDeadlinePassed) return;#}
+{#            isDirty = true;#}
+{#        }#}
+{##}
+{#        // 監聽所有表單輸入#}
+{#        function listenForChanges() {#}
+{#            const inputs = document.querySelectorAll('#team-form input, #team-form textarea, #project-form input, #project-form textarea');#}
+{#            inputs.forEach(input => {#}
+{#                input.addEventListener('input', markAsDirty);#}
+{#            });#}
+{#            // 檔案選擇也算#}
+{#            proposalFile.addEventListener('change', markAsDirty);#}
+{#        }#}
+{##}
+{#        // *** 5. 驗證 (Auth) ***#}
+{##}
+{#        // 監聽驗證狀態#}
+{#        onAuthStateChanged(auth, (user) => {#}
+{#            if (user && firebaseConfig.apiKey !== "YOUR_API_KEY") {#}
+{#                // 使用者已登入#}
+{#                currentUserId = user.uid;#}
+{#                userEmail.textContent = user.email;#}
+{##}
+{#                // 顯示主內容#}
+{#                pageLoading.classList.add('hidden');#}
+{#                appView.classList.remove('hidden');#}
+{##}
+{#                checkDeadline(); // 檢查是否截止#}
+{#                loadData(currentUserId); // 載入資料#}
+{#                listenForChanges(); // 監聽表單變更#}
+{#            } else {#}
+{#                // 使用者未登入，踢回登入頁#}
+{#                console.log("使用者未登入，跳轉至 /registration/");#}
+{#                window.location.href = '/registration/';#}
+{#            }#}
+{#        });#}
+{##}
+{#        // 登出#}
+{#        logoutBtn.addEventListener('click', async () => {#}
+{#            if (isDirty && !confirm("您有未儲存的變更，確定要登出嗎？")) {#}
+{#                return;#}
+{#            }#}
+{#            await signOut(auth);#}
+{#            isDirty = false; // 重設#}
+{#            // onAuthStateChanged 會自動處理跳轉#}
+{#        });#}
+{##}
+{#        // *** 6. 資料庫 (Firestore) ***#}
+{##}
+{#        // 獲取資料庫文檔路徑#}
+{#        function getDataRef(uid) {#}
+{#            // 使用 Firestore 安全規則建議的路徑#}
+{#            return doc(db, `artifacts/${appId}/users/${uid}/registration`, "data");#}
+{#        }#}
+{##}
+{#        // 載入資料#}
+{#        async function loadData(uid) {#}
+{#            loadingIndicator.classList.remove('hidden');#}
+{#            registrationForm.classList.add('hidden');#}
+{#            const docRef = getDataRef(uid);#}
+{##}
+{#            try {#}
+{#                const docSnap = await getDoc(docRef);#}
+{#                if (docSnap.exists()) {#}
+{#                    const data = docSnap.data();#}
+{#                    populateForm(data);#}
+{#                } else {#}
+{#                    console.log("No such document! 這是新用戶。");#}
+{#                    // 即使沒有資料，也要顯示表單#}
+{#                }#}
+{#            } catch (error) {#}
+{#                console.error("載入資料錯誤:", error);#}
+{#                showToast("載入資料失敗", "error");#}
+{#            } finally {#}
+{#                loadingIndicator.classList.add('hidden');#}
+{#                registrationForm.classList.remove('hidden');#}
+{#                isDirty = false; // 剛載入，重設#}
+{#            }#}
+{#        }#}
+{##}
+{#        // 將 Firebase 資料填入表單#}
+{#        function populateForm(data) {#}
+{#            // 隊伍資料#}
+{#            if (data.team) {#}
+{#                $('captain-name-cn').value = data.team.captainNameCn || '';#}
+{#                $('captain-name-en').value = data.team.captainNameEn || '';#}
+{#                $('captain-student-id').value = data.team.captainStudentId || '';#}
+{#                $('captain-department').value = data.team.captainDepartment || '';#}
+{#                $('captain-email').value = data.team.captainEmail || '';#}
+{#                $('captain-line-id').value = data.team.captainLineId || '';#}
+{##}
+{#                $('advisor-department').value = data.team.advisorDepartment || '';#}
+{#                $('advisor-name').value = data.team.advisorName || '';#}
+{##}
+{#                // 填入隊員#}
+{#                membersContainer.innerHTML = ''; // 清空#}
+{#                if (data.team.members && Array.isArray(data.team.members)) {#}
+{#                    data.team.members.forEach(member => {#}
+{#                        addMemberToDOM(member);#}
+{#                    });#}
+{#                }#}
+{#            }#}
+{##}
+{#            // 作品資料#}
+{#            if (data.project) {#}
+{#                $('team-name').value = data.project.teamName || '';#}
+{#                $('project-name').value = data.project.projectName || '';#}
+{#                $('project-desc').value = data.project.description || '';#}
+{#                updateCharCount(); // 更新字數#}
+{##}
+{#                if (data.project.proposalUrl) {#}
+{#                    currentFileLink.textContent = data.project.proposalFilename || '查看檔案';#}
+{#                    currentFileLink.href = data.project.proposalUrl;#}
+{#                }#}
+{#            }#}
+{#        }#}
+{##}
+{#        // 儲存 "隊伍成員" 資料#}
+{#        teamForm.addEventListener('submit', async (e) => {#}
+{#            e.preventDefault();#}
+{#            if (isDeadlinePassed) return;#}
+{##}
+{#            const docRef = getDataRef(currentUserId);#}
+{##}
+{#            // 收集隊員資料#}
+{#            const members = [];#}
+{#            document.querySelectorAll('.member-card').forEach(card => {#}
+{#                members.push({#}
+{#                    nameCn: card.querySelector('.member-name-cn').value,#}
+{#                    nameEn: card.querySelector('.member-name-en').value,#}
+{#                    studentId: card.querySelector('.member-student-id').value,#}
+{#                    department: card.querySelector('.member-department').value,#}
+{#                    email: card.querySelector('.member-email').value,#}
+{#                });#}
+{#            });#}
+{##}
+{#            const teamData = {#}
+{#                team: {#}
+{#                    captainNameCn: $('captain-name-cn').value,#}
+{#                    captainNameEn: $('captain-name-en').value,#}
+{#                    captainStudentId: $('captain-student-id').value,#}
+{#                    captainDepartment: $('captain-department').value,#}
+{#                    captainEmail: $('captain-email').value,#}
+{#                    captainLineId: $('captain-line-id').value,#}
+{#                    advisorDepartment: $('advisor-department').value,#}
+{#                    advisorName: $('advisor-name').value,#}
+{#                    members: members#}
+{#                }#}
+{#            };#}
+{##}
+{#            try {#}
+{#                await setDoc(docRef, teamData, { merge: true }); // merge: true 保留 project 資料#}
+{#                showToast("隊伍資料已儲存！");#}
+{#                isDirty = false;#}
+{#            } catch (error) {#}
+{#                console.error("儲存隊伍資料錯誤:", error);#}
+{#                showToast("儲存失敗", "error");#}
+{#            }#}
+{#        });#}
+{##}
+{#        // 儲存 "隊伍作品" 資料#}
+{#        projectForm.addEventListener('submit', async (e) => {#}
+{#            e.preventDefault();#}
+{#            if (isDeadlinePassed) return;#}
+{##}
+{#            // 注意：檔案上傳是分開處理的，這裡只儲存文字和檔案 URL#}
+{#            // 如果檔案正在上傳，我們應該等待#}
+{#            if (uploadProgressContainer.classList.contains('uploading')) {#}
+{#                showToast("檔案上傳中，請稍候...", "error");#}
+{#                return;#}
+{#            }#}
+{##}
+{#            await saveProjectData();#}
+{#        });#}
+{##}
+{#        // 儲存作品資料 (文字+URL)#}
+{#        async function saveProjectData(fileUrl = null, filename = null) {#}
+{#            const docRef = getDataRef(currentUserId);#}
+{##}
+{#            let projectData = {#}
+{#                project: {#}
+{#                    teamName: $('team-name').value,#}
+{#                    projectName: $('project-name').value,#}
+{#                    description: $('project-desc').value,#}
+{#                }#}
+{#            };#}
+{##}
+{#            // 如果有新的 URL，才更新#}
+{#            if (fileUrl) {#}
+{#                projectData.project.proposalUrl = fileUrl;#}
+{#                projectData.project.proposalFilename = filename;#}
+{#            }#}
+{##}
+{#            try {#}
+{#                await setDoc(docRef, projectData, { merge: true }); // merge: true 保留 team 資料#}
+{#                showToast("作品資料已儲存！");#}
+{##}
+{#                if (fileUrl) {#}
+{#                    currentFileLink.href = fileUrl;#}
+{#                    currentFileLink.textContent = filename;#}
+{#                }#}
+{##}
+{#                isDirty = false;#}
+{#            } catch (error) {#}
+{#                console.error("儲存作品資料錯誤:", error);#}
+{#                showToast("儲存失敗", "error");#}
+{#            }#}
+{#        }#}
+{##}
+{##}
+{#        // *** 7. 檔案儲存 (Storage) ***#}
+{##}
+{#        proposalFile.addEventListener('change', (e) => {#}
+{#            if (isDeadlinePassed) return;#}
+{##}
+{#            const file = e.target.files[0];#}
+{#            if (!file) return;#}
+{##}
+{#            // 檢查檔案類型#}
+{#            if (file.type !== 'application/pdf') {#}
+{#                showToast("檔案格式錯誤，僅限 PDF。", "error");#}
+{#                proposalFile.value = ''; // 清空#}
+{#                return;#}
+{#            }#}
+{##}
+{#            // 檢查檔案大小 (10MB)#}
+{#            if (file.size > 10 * 1024 * 1024) {#}
+{#                showToast("檔案過大，不得超過 10MB。", "error");#}
+{#                proposalFile.value = ''; // 清空#}
+{#                return;#}
+{#            }#}
+{##}
+{#            uploadFile(file);#}
+{#        });#}
+{##}
+{#        async function uploadFile(file) {#}
+{#            if (!currentUserId) return;#}
+{##}
+{#            const storagePath = `artifacts/${appId}/users/${currentUserId}/proposal.pdf`;#}
+{#            const storageRef = ref(storage, storagePath);#}
+{#            const uploadTask = uploadBytesResumable(storageRef, file);#}
+{##}
+{#            uploadProgressContainer.classList.remove('hidden');#}
+{#            uploadProgressContainer.classList.add('uploading'); // 標記上傳中#}
+{#            uploadStatus.textContent = '上傳中...';#}
+{##}
+{#            uploadTask.on('state_changed',#}
+{#                (snapshot) => {#}
+{#                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;#}
+{#                    uploadProgressBar.style.width = progress + '%';#}
+{#                },#}
+{#                (error) => {#}
+{#                    console.error("上傳失敗:", error);#}
+{#                    showToast("上傳失敗", "error");#}
+{#                    uploadStatus.textContent = '上傳失敗。';#}
+{#                    uploadProgressContainer.classList.add('hidden');#}
+{#                    uploadProgressContainer.classList.remove('uploading');#}
+{#                },#}
+{#                async () => {#}
+{#                    // 上傳完成#}
+{#                    uploadStatus.textContent = '上傳成功！正在儲存連結...';#}
+{#                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);#}
+{##}
+{#                    // 將 URL 存回 Firestore#}
+{#                    await saveProjectData(downloadURL, file.name);#}
+{##}
+{#                    uploadProgressContainer.classList.add('hidden');#}
+{#                    uploadProgressContainer.classList.remove('uploading');#}
+{#                    uploadStatus.textContent = `上傳成功: ${file.name}`;#}
+{#                }#}
+{#            );#}
+{#        }#}
+{##}
+{##}
+{#        // *** 8. 介面 (UI) 邏輯 ***#}
+{##}
+{#        // 標籤頁切換#}
+{#        tabs.forEach(tab => {#}
+{#            tab.addEventListener('click', () => {#}
+{#                const targetTab = tab.dataset.tab;#}
+{##}
+{#                // 檢查是否切換到#}
+{#                if (targetTab === currentOpenTab) return;#}
+{##}
+{#                // 檢查未儲存#}
+{#                if (isDirty) {#}
+{#                    showUnsavedModal(targetTab);#}
+{#                    return;#}
+{#                }#}
+{##}
+{#                switchTab(targetTab);#}
+{#            });#}
+{#        });#}
+{##}
+{#        function switchTab(targetTab) {#}
+{#            currentOpenTab = targetTab;#}
+{##}
+{#            tabs.forEach(t => t.classList.remove('tab-active'));#}
+{#            document.querySelector(`[data-tab="${targetTab}"]`).classList.add('tab-active');#}
+{##}
+{#            if (targetTab === 'team-info') {#}
+{#                teamInfoTab.classList.remove('hidden');#}
+{#                projectInfoTab.classList.add('hidden');#}
+{#            } else {#}
+{#                teamInfoTab.classList.add('hidden');#}
+{#                projectInfoTab.classList.remove('hidden');#}
+{#            }#}
+{##}
+{#            unsavedModal.classList.add('hidden'); // 關閉 modal#}
+{#            isDirty = false; // 放棄變更後重設#}
+{#        }#}
+{##}
+{#        // 顯示未儲存警告#}
+{#        function showUnsavedModal(targetTab) {#}
+{#            unsavedModal.classList.remove('hidden');#}
+{##}
+{#            // 移除舊的監聽器 (避免重複)#}
+{#            const newConfirmBtn = confirmSwitchTab.cloneNode(true);#}
+{#            confirmSwitchTab.parentNode.replaceChild(newConfirmBtn, confirmSwitchTab);#}
+{##}
+{#            // 綁定新的監聽器#}
+{#            newConfirmBtn.addEventListener('click', () => switchTab(targetTab), { once: true });#}
+{#        }#}
+{##}
+{#        cancelSwitchTab.addEventListener('click', () => {#}
+{#            unsavedModal.classList.add('hidden');#}
+{#        });#}
+{##}
+{#        // 瀏覽器關閉/重整警告#}
+{#        window.addEventListener('beforeunload', (e) => {#}
+{#            if (isDirty) {#}
+{#                e.preventDefault();#}
+{#                e.returnValue = ''; // 觸發瀏覽器內建提示#}
+{#            }#}
+{#        });#}
+{##}
+{##}
+{#        // 新增隊員#}
+{#        addMemberBtn.addEventListener('click', () => {#}
+{#            if (isDeadlinePassed) return;#}
+{##}
+{#            const memberCount = membersContainer.querySelectorAll('.member-card').length;#}
+{#            if (memberCount >= 3) { // 隊長(1) + 隊員(3) = 4#}
+{#                memberCountError.classList.remove('hidden');#}
+{#                return;#}
+{#            }#}
+{#            addMemberToDOM();#}
+{#            markAsDirty(); // 新增也算#}
+{#        });#}
+{##}
+{#        // 新增隊員到 DOM#}
+{#        function addMemberToDOM(data = null) {#}
+{#            const memberCount = membersContainer.querySelectorAll('.member-card').length;#}
+{#            const clone = memberTemplate.content.cloneNode(true);#}
+{#            const card = clone.querySelector('.member-card');#}
+{##}
+{#            card.querySelector('h5').textContent = `隊員 ${memberCount + 1}`;#}
+{##}
+{#            if (data) {#}
+{#                card.querySelector('.member-name-cn').value = data.nameCn || '';#}
+{#                card.querySelector('.member-name-en').value = data.nameEn || '';#}
+{#                card.querySelector('.member-student-id').value = data.studentId || '';#}
+{#                card.querySelector('.member-department').value = data.department || '';#}
+{#                card.querySelector('.member-email').value = data.email || '';#}
+{#            }#}
+{##}
+{#            card.querySelector('.delete-member-btn').addEventListener('click', (e) => {#}
+{#                if (isDeadlinePassed) return;#}
+{#                e.currentTarget.closest('.member-card').remove();#}
+{#                updateMemberHeaders();#}
+{#                markAsDirty(); // 刪除也算#}
+{#                memberCountError.classList.add('hidden'); // 刪除後肯定不會超#}
+{#            });#}
+{##}
+{#            membersContainer.appendChild(clone);#}
+{##}
+{#            // 新增的 input 也需要監聽#}
+{#            card.querySelectorAll('input').forEach(input => {#}
+{#                input.addEventListener('input', markAsDirty);#}
+{#            });#}
+{#        }#}
+{##}
+{#        // 更新隊員標題 (刪除時)#}
+{#        function updateMemberHeaders() {#}
+{#            membersContainer.querySelectorAll('.member-card').forEach((card, index) => {#}
+{#                card.querySelector('h5').textContent = `隊員 ${index + 1}`;#}
+{#            });#}
+{#        }#}
+{##}
+{#        // 作品概述字數統計#}
+{#        projectDesc.addEventListener('input', updateCharCount);#}
+{#        function updateCharCount() {#}
+{#            const count = projectDesc.value.length;#}
+{#            descCharCount.textContent = `${count} / 100`;#}
+{#            if (count < 50 || count > 100) {#}
+{#                descCharCount.classList.add('text-red-400');#}
+{#                descCharCount.classList.remove('text-gray-400');#}
+{#            } else {#}
+{#                descCharCount.classList.remove('text-red-400');#}
+{#                descCharCount.classList.add('text-gray-400');#}
+{#            }#}
+{#        }#}
+{##}
+{#        // *** 9. 啟動 ***#}
+{#        // (不需要立即檢查 checkDeadline()，onAuthStateChanged 會觸發)#}
+{##}
+{#    </script>#}
+{#</body>#}
+{#</html>#}
