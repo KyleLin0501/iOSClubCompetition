@@ -283,13 +283,13 @@
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyCBi5ZPF5wFy7VS7rxUOjznrY5IMqab-R8",
-            authDomain: "iosclubcompetition.firebaseapp.com",
-            projectId: "iosclubcompetition",
-            storageBucket: "iosclubcompetition.firebasestorage.app",
-            messagingSenderId: "820341617058",
-            appId: "1:820341617058:web:4c8a9a78766ebb7a57c2fb",
-            measurementId: "G-17C2WZKGFC"
+            apiKey: "{{ FIREBASE_CONFIG.apiKey }}",
+            authDomain: "{{ FIREBASE_CONFIG.authDomain }}",
+            projectId: "{{ FIREBASE_CONFIG.projectId }}",
+            storageBucket: "{{ FIREBASE_CONFIG.storageBucket }}",
+            messagingSenderId: "{{ FIREBASE_CONFIG.messagingSenderId }}",
+            appId: "{{ FIREBASE_CONFIG.appId }}",
+            measurementId: "{{ FIREBASE_CONFIG.measurementId }}"
         };
 
         const app = initializeApp(firebaseConfig);
