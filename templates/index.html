@@ -141,6 +141,101 @@
 
         </div>
     </section>
+
+     <section class="py-12 bg-indigo-900 text-white relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-20 pointer-events-none">
+            <div class="absolute -top-24 -left-24 w-96 h-96 bg-purple-500 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-0 right-0 w-80 h-80 bg-blue-500 rounded-full blur-3xl"></div>
+        </div>
+
+        <div class="container mx-auto px-4 relative z-10 text-center">
+
+            <h2 class="text-2xl md:text-3xl font-bold mb-2 flex justify-center items-center gap-2">
+                距離初賽收件截止
+            </h2>
+            <p class="text-indigo-200 mb-8 text-sm md:text-base">請務必於期限前完成線上報名與文件上傳</p>
+
+            <div class="flex flex-wrap justify-center items-center gap-4 md:gap-6" id="countdown-wrapper">
+
+                <div class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 w-24 md:w-32 flex flex-col items-center">
+                    <span id="days" class="text-4xl md:text-5xl font-bold font-mono text-white">00</span>
+                    <span class="text-xs md:text-sm text-indigo-200 uppercase mt-1">Days</span>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 w-24 md:w-32 flex flex-col items-center">
+                    <span id="hours" class="text-4xl md:text-5xl font-bold font-mono text-white">00</span>
+                    <span class="text-xs md:text-sm text-indigo-200 uppercase mt-1">Hours</span>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 w-24 md:w-32 flex flex-col items-center">
+                    <span id="minutes" class="text-4xl md:text-5xl font-bold font-mono text-white">00</span>
+                    <span class="text-xs md:text-sm text-indigo-200 uppercase mt-1">Minutes</span>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 w-24 md:w-32 flex flex-col items-center relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-red-500/20 group-hover:bg-red-500/30 transition duration-300"></div> <span id="seconds" class="text-4xl md:text-5xl font-bold font-mono text-yellow-300">00</span>
+                    <span class="text-xs md:text-sm text-indigo-200 uppercase mt-1">Seconds</span>
+                </div>
+
+            </div>
+
+            <div id="expired-message" class="hidden mt-6">
+                <span class="text-3xl font-bold text-red-400">已截止收件</span>
+                <p class="mt-2 text-indigo-200">很抱歉，初賽報名與繳件時間已過。</p>
+            </div>
+
+            <div class="mt-8" id="action-buttons">
+                <a href="/registration/" class="inline-block px-8 py-3 bg-white text-indigo-900 font-bold rounded-full hover:bg-yellow-400 hover:text-indigo-900 transition transform hover:-translate-y-1 shadow-lg text-lg">
+                    前往繳交資料
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        (function() {
+            // 設定截止時間：台北時間 (GMT+8) 2025年12月8日 00:00:00
+            // ISO 8601 格式確保跨瀏覽器與時區準確性
+            const targetDate = new Date("2025-12-08T00:00:00+08:00").getTime();
+
+            const timerInterval = setInterval(function() {
+                // 獲取當前時間
+                const now = new Date().getTime();
+
+                // 計算剩餘時間差 (毫秒)
+                const distance = targetDate - now;
+
+                // 計算天、時、分、秒
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                // 補零函數 (例如 5 -> 05)
+                const formatTime = (time) => time < 10 ? `0${time}` : time;
+
+                // 更新 HTML 內容
+                const daysEl = document.getElementById("days");
+                const hoursEl = document.getElementById("hours");
+                const minutesEl = document.getElementById("minutes");
+                const secondsEl = document.getElementById("seconds");
+
+                if(daysEl) daysEl.innerText = formatTime(days);
+                if(hoursEl) hoursEl.innerText = formatTime(hours);
+                if(minutesEl) minutesEl.innerText = formatTime(minutes);
+                if(secondsEl) secondsEl.innerText = formatTime(seconds);
+
+                // 如果倒數結束
+                if (distance < 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById("countdown-wrapper").style.display = "none";
+                    document.getElementById("action-buttons").style.display = "none";
+                    document.getElementById("expired-message").classList.remove("hidden");
+                }
+            }, 1000);
+        })();
+    </script>
+
     <!-- 競賽宗旨 -->
     <section id="purpose" class="py-16 md:py-24 bg-indigo-50">
         <div class="container mx-auto px-4 md:px-6">
@@ -154,6 +249,63 @@
             </div>
         </div>
     </section>
+
+
+
+    <!-- 入圍隊伍 -->
+    {#    <section id="finalists" class="py-16 md:py-24 bg-white relative overflow-hidden">#}
+    {#        <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-30">#}
+    {#            <div class="absolute -top-20 -right-20 w-64 h-64 bg-indigo-100 rounded-full blur-3xl"></div>#}
+    {#            <div class="absolute top-40 left-10 w-48 h-48 bg-pink-100 rounded-full blur-3xl"></div>#}
+    {#        </div>#}
+    {##}
+    {#        <div class="container mx-auto px-4 md:px-6 relative z-10">#}
+    {#            <div class="text-center mb-12">#}
+    {#                <h2 class="text-3xl md:text-4xl font-bold mb-4">入圍決賽隊伍</h2>#}
+    {##}
+    {#                <div class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gray-100 border border-gray-200 shadow-sm">#}
+    {#                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar-event text-indigo-600" viewBox="0 0 16 16">#}
+    {#                        <path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z"/>#}
+    {#                        <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>#}
+    {#                    </svg>#}
+    {#                    <span class="text-gray-700 font-semibold tracking-wide">決賽日期：2025/12/16</span>#}
+    {#                </div>#}
+    {#            </div>#}
+    {##}
+    {#            <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">#}
+    {#                <div class="overflow-x-auto">#}
+    {#                    <table class="w-full text-left border-collapse">#}
+    {#                        <thead>#}
+    {#                        <tr class="bg-gray-50 border-b border-gray-200">#}
+    {#                            <th class="px-6 py-5 text-sm font-bold text-gray-500 uppercase tracking-wider">隊伍名稱</th>#}
+    {#                            <th class="px-6 py-5 text-sm font-bold text-gray-500 uppercase tracking-wider">作品名稱</th>#}
+    {#                            <th class="px-6 py-5 text-sm font-bold text-gray-500 uppercase tracking-wider text-center">狀態</th>#}
+    {#                        </tr>#}
+    {#                        </thead>#}
+    {#                        <tbody class="divide-y divide-gray-100">#}
+    {##}
+    {#                        <tr class="hover:bg-indigo-50/40 transition duration-200 group">#}
+    {#                            <td class="px-6 py-4">#}
+    {#                                <div class="font-bold text-gray-900 group-hover:text-indigo-600 transition">Swift 探索者</div>#}
+    {#                            </td>#}
+    {#                            <td class="px-6 py-4 text-gray-600">#}
+    {#                                校園生活助手 App#}
+    {#                            </td>#}
+    {#                            <td class="px-6 py-4 text-center">#}
+    {#                                    <span class="inline-block px-4 py-1.5 rounded-full text-sm font-bold text-white shadow-sm btn-gradient-special" style="font-size: 0.85rem;">#}
+    {#                                        ✨ 入圍決賽#}
+    {#                                    </span>#}
+    {#                            </td>#}
+    {#                        </tr>#}
+    {#                        </tbody>#}
+    {#                    </table>#}
+    {#                </div>#}
+    {#                <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 text-center text-sm text-gray-500">#}
+    {#                    恭喜以上入圍隊伍，此表格順序非決賽報告順序。#}
+    {#                </div>#}
+    {#            </div>#}
+    {#        </div>#}
+    {#    </section>#}
 
     <!-- 競賽時程 -->
     <section id="schedule" class="py-16 md:py-24 bg-white">
