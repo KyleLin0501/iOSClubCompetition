@@ -13,7 +13,7 @@
 
 ---
 
-## 🔥 Firebase 後端架構 (核心細節)
+## 🔥 Firebase 後端架構
 
 本專案採用 **Firebase 11.6.1 (Modular SDK)**。後續維護者請務必理解以下配置：
 
@@ -42,6 +42,29 @@
 ### 4. Storage (檔案儲存)
 * **儲存路徑**：`artifacts / {projectId} / users / {uid} / proposals / {fileName}`
 * **邏輯**：接收前端上傳的 PDF 檔案，成功後產生的 `DownloadURL` 會自動回寫至 Firestore 的 `proposalURL` 欄位。
+
+---
+
+## ⚠️ 安全警告：禁止將 Firebase 憑證傳至 GitHub
+
+為了保護資料庫安全，**絕對禁止**將包含 API Key 的設定檔或金鑰上傳至公開的 GitHub 儲存庫。
+
+### 1. 為什麼不能上傳？
+* **資料外洩**：一旦 `GoogleService-Info.plist` 或包含 `firebaseConfig` 的程式碼公開，任何人都可以利用這些金鑰存取你的 Firestore 資料庫與 Storage 檔案。
+* **額度盜用**：惡意攻擊者可能利用你的憑證大量呼叫 Firebase 服務，導致你的專案產生高額費用或被停權。
+
+### 2. 如何保護憑證？
+本專案使用以下機制保護隱私資料：
+
+* **使用 .gitignore**：
+  在專案根目錄下建立 `.gitignore` 檔案，並加入以下內容，確保 Git 忽略這些敏感檔案：
+  ```text
+  # Firebase 敏感檔案
+  GoogleService-Info.plist
+  
+  # Django 環境變數
+  .env
+  local_settings.py
 
 ---
 
